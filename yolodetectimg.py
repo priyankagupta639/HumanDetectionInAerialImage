@@ -74,7 +74,6 @@ while cv2.waitKey(1) < 0:
     conf_threshold = 0.40
     nms_threshold = 10
     
-    
     #print(len(outs))
     
     # In case of tiny YOLOv3 we have 2 output(outs) from 2 different scales [3 bounding box per each scale]
@@ -115,8 +114,63 @@ while cv2.waitKey(1) < 0:
         h = box[3]
         draw_pred(image, class_ids[i], confidences[i], round(x), round(y), round(x+w), round(y+h))
         
-   
     head_tail = os.path.split(args.image)
+    
+    directory = r'C:\Users\Lenovo\Desktop\HumanDetection\YOLO-Object-Detection\output'
+    
+    os.chdir(directory)
+  
+    # Filename
+    filename = 'savedImage.jpg'
+  
+    cv2.imwrite(filename, image)
+  
+    print('Successfully saved')
+   
     cv2.imwrite(os.path.join(head_tail[0],"result",head_tail[1]),image)
     cv2.imshow(window_title, image)
     
+def boxes_iou(box1, box2):
+  
+    # Get the Width and Height of each bounding box
+    width_box1 = box1[2]
+    height_box1 = box1[3]
+    width_box2 = box2[2]
+    height_box2 = box2[3]
+    
+    # Calculate the area of the each bounding box
+    area_box1 = width_box1 * height_box1
+    area_box2 = width_box2 * height_box2
+    
+    # Find the vertical edges of the union of the two bounding boxes
+    mx = min(box1[0] - width_box1/2.0, box2[0] - width_box2/2.0)
+    Mx = max(box1[0] + width_box1/2.0, box2[0] + width_box2/2.0)
+    
+    # Calculate the width of the union of the two bounding boxes
+    union_width = Mx - mx
+    
+    # Find the horizontal edges of the union of the two bounding boxes
+    my = min(box1[1] - height_box1/2.0, box2[1] - height_box2/2.0)
+    My = max(box1[1] + height_box1/2.0, box2[1] + height_box2/2.0)    
+    
+    # Calculate the height of the union of the two bounding boxes
+    union_height = My - my
+    
+    # Calculate the width and height of the area of intersection of the two bounding boxes
+    intersection_width = width_box1 + width_box2 - union_width
+    intersection_height = height_box1 + height_box2 - union_height
+   
+    # If the the boxes don't overlap then their IOU is zero
+    if intersection_width <= 0 or intersection_height <= 0:
+        return 0.0
+
+    # Calculate the area of intersection of the two bounding boxes
+    intersection_area = intersection_width * intersection_height
+    
+    # Calculate the area of the union of the two bounding boxes
+    union_area = area_box1 + area_box2 - intersection_area
+    
+    # Calculate the IOU
+    iou = intersection_area/union_area
+    
+    return iou
